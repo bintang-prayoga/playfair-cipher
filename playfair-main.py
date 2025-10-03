@@ -1,11 +1,10 @@
 def normalizeInput (plainT):
-    plainT = plainT.replace("j", "i")
-    plainT = plainT.lower()
-    plainT = plainT.replace(" ", "")
-    plainT = ''.join(filter(str.isalpha, plainT))
+    plainT = plainT.lower() # ubah ke huruf kecil
+    plainT = plainT.replace(" ", "") # hilangkan spasi
+    plainT = ''.join(filter(str.isalpha, plainT)) # hilangkan karakter non-alfabet
     return plainT
 
-# Function to generate the 5x5 key square
+# Generate matriks 5x5 dari key
 def generateKeyTable(key, keyT):
     n = len(key)
 
@@ -41,7 +40,7 @@ def generateKeyTable(key, keyT):
                 i += 1
                 j = 0
 
-# Function to print the 5x5 key table
+# Print matriks 5x5
 def printKeyTable(keyT):
     print("\nPlayfair Key Table:")
     print("+" + "-" * 11 + "+")
@@ -52,8 +51,7 @@ def printKeyTable(keyT):
         print(" |")
     print("+" + "-" * 11 + "+")
 
-# Function to search for the characters of a digraph
-# in the key square and return their position
+# Searching karakter dalam matriks 5x5 dan mengembalikan posisinya
 def search(keyT, a, b, arr):
     if a == 'j':
         a = 'i'
@@ -69,13 +67,13 @@ def search(keyT, a, b, arr):
                 arr[2] = i
                 arr[3] = j
 
-# Function to make the plain text length to be even
+# Mengubah panjang plain text menjadi genap
 def prepare(string):
     if len(string) % 2 != 0:
         string += 'z'
     return string
 
-# Function for performing the encryption
+# Fungsi untuk enkripsi dan dekripsi
 def encrypt(string, keyT):
     n = len(string)
     arr = [0]*4
@@ -116,7 +114,7 @@ def decrypt(string, keyT):
 
     return ''.join(result)
 
-# Function to encrypt using Playfair Cipher
+# Wrapper 
 def encryptByPlayfairCipher(string, key):
     keyT = []
     key = normalizeInput(key)
@@ -141,7 +139,6 @@ def main():
         print("Key text:", key)
         print("Plain text:", string)
         
-        # Generate and display the key table
         keyT = []
         normalizedKey = normalizeInput(key)
         generateKeyTable(normalizedKey, keyT)
@@ -155,7 +152,6 @@ def main():
         print("Key text:", key)
         print("Cipher text:", string)
         
-        # Generate and display the key table
         keyT = []
         normalizedKey = normalizeInput(key)
         generateKeyTable(normalizedKey, keyT)
