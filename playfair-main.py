@@ -125,9 +125,31 @@ def main():
         
         cipher_text = playfair_cipher(prepared_text, keyT, 'encrypt')
         print(f"\nCipher Text    : {cipher_text}")
-        
+
+        save_choice = input("Apakah Anda ingin menyimpan hasil enkripsi ke file? (Y/N): ").strip().upper()
+        if save_choice == 'Y':
+            filename = input("Masukkan nama file: ").strip()
+            filename = filename if filename.endswith('.txt') else f"{filename}.txt"
+            try:
+                with open(filename, 'w') as f:
+                    f.write(cipher_text)
+                print(f"Ciphertext berhasil disimpan ke file '{filename}'")
+            except IOError as e:
+                print(f"Gagal menyimpan file: {e}")
+
     elif choice == 'D':
-        text = input("Masukkan cipher text: ").strip()
+        open_choice = input("Apakah Anda ingin membuka hasil dekripsi dari file? (Y/N): ").strip().upper()
+        if open_choice == 'Y':
+            filename = input("Masukkan nama file: ").strip()
+            try:
+                with open(filename, 'r') as f:
+                    text = f.read().strip()
+                print(f"Ciphertext berhasil dibuka dari file '{filename}': {text}")
+            except IOError as e:
+                print(f"Gagal membuka file: {e}")
+                return
+            
+        else: text = input("Masukkan cipher text: ").strip()
         
         normalized_key = normalizeInput(key)
         normalized_text = normalizeInput(text) # Ciphertext juga dinormalisasi
@@ -144,6 +166,8 @@ def main():
         plain_text = playfair_cipher(normalized_text, keyT, 'decrypt')
         print(f"\nHasil Plain Text : {plain_text}")
 
+        
 
+    
 if __name__ == "__main__":
     main()
