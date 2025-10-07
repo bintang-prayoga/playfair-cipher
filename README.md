@@ -1,44 +1,54 @@
-# Enhanced Playfair Cipher (6×6)
+# Playfair Cipher 6×6 (A–Z dan 0–9)
 
-Program enkripsi dan dekripsi menggunakan algoritma Playfair yang dikembangkan menjadi matriks **6×6** sehingga mendukung huruf **A–Z** dan angka **0–9**.
+Program enkripsi dan dekripsi menggunakan algoritma Playfair yang dikembangkan menjadi matriks **6×6** sehingga mendukung huruf **A–Z** dan angka **0–9**. Program interaktif ini menggunakan file `playfair-main.py`.
 
 ## Fitur
 
-- Enkripsi dan dekripsi teks alfanumerik (A–Z, 0–9)
-- Visualisasi matriks kunci 6×6
-- Input otomatis dinormalisasi (hanya A–Z dan 0–9, uppercase)
-- Interface command-line sederhana
+- Mendukung karakter alfanumerik: **A–Z** dan **0–9** (total 36)
+- **Matriks kunci 6×6** yang dibentuk dari key unik + sisa karakter
+- **Normalisasi otomatis**: uppercase dan hanya A–Z/0–9
+- **Visualisasi** matriks kunci 6×6
+- **Log proses**: Key Asli, Plain/Cipher Text Asli, Teks Normal, Teks Siap (digram)
+- **Opsi simpan/buka file**:
+  - Enkripsi: simpan ciphertext ke file `.txt`
+  - Dekripsi: buka ciphertext dari file `.txt`
 
 ## Cara Kerja Singkat
 
-Playfair 6×6 menggunakan matriks 6×6 yang dibentuk dari kunci (karakter unik lebih dulu), lalu diisi sisa karakter dari A–Z dan 0–9.
+- Teks diproses per **bigram** (pasangan karakter)
+- Aturan Playfair pada grid 6×6:
+  - Baris sama: geser kanan (enkripsi) / kiri (dekripsi)
+  - Kolom sama: geser bawah (enkripsi) / atas (dekripsi)
+  - Persegi panjang: tukar kolom (ambil sudut persegi)
+  - Wrapping menggunakan modulo 6
+- Penanganan teks:
+  - Karakter berulang dalam satu bigram disisipi **'X'** (mis. HELLO → HELXLO)
+  - Panjang ganjil dipad dengan **'Z'** di akhir
 
-Aturan bigram (sama seperti Playfair klasik, namun pada grid 6×6):
-
-- Baris sama: geser kanan untuk enkripsi, kiri untuk dekripsi
-- Kolom sama: geser bawah untuk enkripsi, atas untuk dekripsi
-- Persegi panjang: tukar kolom (ambil sudut persegi panjang)
-- Wrapping menggunakan modulo 6
-
-## Penggunaan
-
-Jalankan program:
+## Menjalankan Program
 
 ```bash
-python playfair-6x6.py
+python playfair-main.py
 ```
 
-Menu:
+## Alur Prompt (Interaktif)
 
-- `E` untuk enkripsi
-- `D` untuk dekripsi
+1. `Pilih mode Enkripsi (E) atau Dekripsi (D):`
+2. `Masukkan key:`
+3. Jika Enkripsi: `Masukkan plain text:`
+   - Program menampilkan tabel kunci 6×6 dan log proses
+   - Opsi: `Apakah Anda ingin menyimpan hasil enkripsi ke file? (Y/N)`
+4. Jika Dekripsi:
+   - Opsi: `Apakah Anda ingin membuka hasil dekripsi dari file? (Y/N)`
+   - Jika tidak, `Masukkan cipher text:`
+   - Program menampilkan tabel kunci 6×6 dan log proses
 
-## Contoh
+## Contoh Enkripsi
 
 ```
-Encrypt or Decrypt (E/D): E
-Enter the key: SECRET123
-Enter the plain text: PROGRAMMING2024
+Pilih mode Enkripsi (E) atau Dekripsi (D): E
+Masukkan key: SECRET123
+Masukkan plain text: PROGRAMMING2024
 
 Playfair Key Table (6x6):
 +-------------+
@@ -49,20 +59,48 @@ Playfair Key Table (6x6):
 | V W X Y Z 0 |
 | 4 5 6 7 8 9 |
 +-------------+
-Cipher text: YBMICBOVHOMGVF6V
+
+--- Proses Enkripsi ---
+Key Asli       : SECRET123
+Plain Text Asli: PROGRAMMING2024
+Teks Normal    : PROGRAMMING2024
+Teks Siap      : PR OG RA MM IN G2 02 4Z
+
+Cipher Text    : YBMICBOVHOMGVF6V
 ```
 
-## Catatan
+## Contoh Dekripsi (buka dari file optional)
 
-- Pasangan huruf yang sama akan disisipi 'X' (mis. HELLO → HELXLO)
-- Panjang ganjil akan dipad dengan 'X' di akhir
-- Kunci harus sama pada enkripsi dan dekripsi
-- Hanya karakter A–Z dan 0–9 yang diproses
+```
+Pilih mode Enkripsi (E) atau Dekripsi (D): D
+Masukkan key: SECRET123
+Apakah Anda ingin membuka hasil dekripsi dari file? (Y/N): N
+Masukkan cipher text: YBMICBOVHOMGVF6V
+
+Playfair Key Table (6x6):
++-------------+
+| S E C R T 1 |
+| 2 3 A B D F |
+| G H I J K L |
+| M N O P Q U |
+| V W X Y Z 0 |
+| 4 5 6 7 8 9 |
++-------------+
+
+--- Proses Dekripsi ---
+Key Asli         : SECRET123
+Cipher Text Asli : YBMICBOVHOMGVF6V
+Cipher Teks Normal: YBMICBOVHOMGVF6V
+
+Hasil Plain Text : PROXRAMXING2024
+```
+
+Catatan: Tanda **X** dan **Z** yang ditambahkan saat enkripsi tidak dihapus otomatis saat dekripsi. Anda bisa menghilangkannya secara manual jika dibutuhkan.
 
 ## Persyaratan
 
 - Python 3.6+
-- Tanpa dependensi tambahan
+- Tidak ada dependensi tambahan
 
 ---
 
