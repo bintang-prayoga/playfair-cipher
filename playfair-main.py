@@ -1,164 +1,148 @@
-def normalizeInput (plainT):
-    plainT = plainT.lower() # ubah ke huruf kecil
-    plainT = plainT.replace(" ", "") # hilangkan spasi
-    plainT = ''.join(filter(str.isalpha, plainT)) # hilangkan karakter non-alfabet
-    return plainT
+# Definisi set karakter A-Z dan 0-9
+ALPHANUM = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
-# Generate matriks 5x5 dari key
+def normalizeInput(text):
+    text = text.upper() # Ubah ke huruf besar
+    text = ''.join(filter(str.isalnum, text)) # Hapus karakter non-alfanumerik
+    return text
+
 def generateKeyTable(key, keyT):
-    n = len(key)
-
+    # Membuat matriks 6x6 berdasarkan key yang diberikan
     keyT.clear()
-    for i in range(5):
-        keyT.append([0]*5)
+    for _ in range(6):
+        keyT.append([''] * 6)
 
-    hashMap = [0]*26
+    # Menggunakan set untuk efisiensi pengecekan karakter yang sudah ada
+    seen = set()
+    temp_key = ""
+    for char in key:
+        if char not in seen:
+            seen.add(char)
+            temp_key += char
 
-    for i in range(n):
-        if key[i] != 'j':
-            hashMap[ord(key[i]) - 97] = 2
+    # Tambahkan sisa karakter dari ALPHANUM
+    for char in ALPHANUM:
+        if char not in seen:
+            temp_key += char
 
-    hashMap[ord('j') - 97] = 1
+    # Isi matriks 6x6
+    idx = 0
+    for i in range(6):
+        for j in range(6):
+            keyT[i][j] = temp_key[idx]
+            idx += 1
 
-    i = 0
-    j = 0
-
-    for k in range(n):
-        if hashMap[ord(key[k]) - 97] == 2:
-            hashMap[ord(key[k]) - 97] -= 1
-            keyT[i][j] = key[k]
-            j += 1
-            if j == 5:
-                i += 1
-                j = 0
-
-    for k in range(26):
-        if hashMap[k] == 0:
-            keyT[i][j] = chr(k + 97)
-            j += 1
-            if j == 5:
-                i += 1
-                j = 0
-
-# Print matriks 5x5
 def printKeyTable(keyT):
-    print("\nPlayfair Key Table:")
-    print("+" + "-" * 11 + "+")
-    for i in range(5):
+    # Mencetak matriks 6x6 dengan format yang rapi.
+    print("\nPlayfair Key Table (6x6):")
+    print("+" + "-" * 13 + "+")
+    for i in range(6):
         print("|", end="")
-        for j in range(5):
+        for j in range(6):
             print(f" {keyT[i][j]}", end="")
         print(" |")
-    print("+" + "-" * 11 + "+")
+    print("+" + "-" * 13 + "+")
 
-# Searching karakter dalam matriks 5x5 dan mengembalikan posisinya
-def search(keyT, a, b, arr):
-    if a == 'j':
-        a = 'i'
-    if b == 'j':
-        b = 'i'
+def search(keyT, char):
+    # Mencari posisi (baris, kolom) sebuah karakter dalam matriks.
+    for i in range(6):
+        for j in range(6):
+            if keyT[i][j] == char:
+                return (i, j)
+    return (None, None) # Seharusnya tidak pernah terjadi dengan input yang valid
 
-    for i in range(5):
-        for j in range(5):
-            if keyT[i][j] == a:
-                arr[0] = i
-                arr[1] = j
-            elif keyT[i][j] == b:
-                arr[2] = i
-                arr[3] = j
+def prepare(plain_text):
+    # Mempersiapkan plaintext:
+    # Menyisipkan 'X' di antara karakter yang sama dalam satu bigram.
+    
+    text_list = list(plain_text)
+    i = 0
+    while i < len(text_list) - 1:
+        if text_list[i] == text_list[i+1]:
+            text_list.insert(i + 1, 'X')
+        i += 2
+    
+    # Memastikan panjang teks genap dengan menambahkan 'Z' jika perlu.
+    if len(text_list) % 2 != 0:
+        text_list.append('Z')
+        
+    return "".join(text_list)
 
-# Mengubah panjang plain text menjadi genap
-def prepare(string):
-    if len(string) % 2 != 0:
-        string += 'z'
-    return string
+def process_bigram(bigram, keyT, mode):
+    # Memproses satu bigram (dua karakter) untuk enkripsi atau dekripsi.
 
-# Fungsi untuk enkripsi dan dekripsi
-def encrypt(string, keyT):
-    n = len(string)
-    arr = [0]*4
+    char1, char2 = bigram[0], bigram[1]
+    row1, col1 = search(keyT, char1)
+    row2, col2 = search(keyT, char2)
+    
+    # Aturan Playfair untuk matriks 6x6
+    # Modulo 6: (x + shift) % 6. Untuk dekripsi, shift negatif.
+    # (x - 1) % 6 sama dengan (x + 5) % 6
+    shift = 1 if mode == 'encrypt' else 5
 
-    result = list(string)
-    for i in range(0, n, 2):
-        search(keyT, result[i], result[i+1], arr)
+    if row1 == row2: # Karakter berada di baris yang sama
+        return keyT[row1][(col1 + shift) % 6] + keyT[row2][(col2 + shift) % 6]
+    elif col1 == col2: # Karakter berada di kolom yang sama
+        return keyT[(row1 + shift) % 6][col1] + keyT[(row2 + shift) % 6][col2]
+    else: # Karakter membentuk persegi
+        return keyT[row1][col2] + keyT[row2][col1]
 
-        if arr[0] == arr[2]:
-            result[i] = keyT[arr[0]][(arr[1] + 1) % 5]
-            result[i+1] = keyT[arr[0]][(arr[3] + 1) % 5]
-        elif arr[1] == arr[3]:
-            result[i] = keyT[(arr[0] + 1) % 5][arr[1]]
-            result[i+1] = keyT[(arr[2] + 1) % 5][arr[1]]
-        else:
-            result[i] = keyT[arr[0]][arr[3]]
-            result[i+1] = keyT[arr[2]][arr[1]]
-
-    return ''.join(result)
-
-def decrypt(string, keyT):
-    n = len(string)
-    arr = [0]*4
-
-    result = list(string)
-    for i in range(0, n, 2):
-        search(keyT, result[i], result[i+1], arr)
-
-        if arr[0] == arr[2]:
-            result[i] = keyT[arr[0]][(arr[1] + 4) % 5]
-            result[i+1] = keyT[arr[0]][(arr[3] + 4) % 5]
-        elif arr[1] == arr[3]:
-            result[i] = keyT[(arr[0] + 4) % 5][arr[1]]
-            result[i+1] = keyT[(arr[2] + 4) % 5][arr[1]]
-        else:
-            result[i] = keyT[arr[0]][arr[3]]
-            result[i+1] = keyT[arr[2]][arr[1]]
-
-    return ''.join(result)
-
-# Wrapper 
-def encryptByPlayfairCipher(string, key):
-    keyT = []
-    key = normalizeInput(key)
-    string = normalizeInput(string)
-    string = prepare(string)
-    generateKeyTable(key, keyT)
-    return encrypt(string, keyT)
-
-def decryptByPlayfairCipher(string, key):
-    keyT = []
-    key = normalizeInput(key)
-    string = normalizeInput(string)
-    string = prepare(string)
-    generateKeyTable(key, keyT)
-    return decrypt(string, keyT)
+def playfair_cipher(text, keyT, mode):
+    # Fungsi utama untuk enkripsi atau dekripsi seluruh teks.
+    result = []
+    for i in range(0, len(text), 2):
+        bigram = text[i:i+2]
+        processed = process_bigram(bigram, keyT, mode)
+        result.append(processed)
+    return "".join(result)
 
 def main():
-    choice = input("Encrypt or Decrypt (E/D): ").strip().upper()
+    
+    while True:
+        choice = input("Pilih mode Enkripsi (E) atau Dekripsi (D): ").strip().upper()
+        if choice in ['E', 'D']:
+            break
+        print("Pilihan tidak valid. Silakan masukkan 'E' atau 'D'.")
+
+    key = input("Masukkan key: ").strip()
+    
     if choice == 'E':
-        key = input("Enter the key: ").strip()
-        string = input("Enter the plain text: ").strip()
-        print("Key text:", key)
-        print("Plain text:", string)
+        text = input("Masukkan plain text: ").strip()
+        
+        normalized_key = normalizeInput(key)
+        normalized_text = normalizeInput(text)
+        prepared_text = prepare(normalized_text)
         
         keyT = []
-        normalizedKey = normalizeInput(key)
-        generateKeyTable(normalizedKey, keyT)
+        generateKeyTable(normalized_key, keyT)
         printKeyTable(keyT)
         
-        string = encryptByPlayfairCipher(string, key)
-        print("Cipher text:", string)
-    else:
-        key = input("Enter the key: ").strip()
-        string = input("Enter the cipher text: ").strip()
-        print("Key text:", key)
-        print("Cipher text:", string)
+        print("\n--- Proses Enkripsi ---")
+        print(f"Key Asli       : {key}")
+        print(f"Plain Text Asli: {text}")
+        print(f"Teks Normal    : {normalized_text}")
+        print(f"Teks Siap      : {' '.join([prepared_text[i:i+2] for i in range(0, len(prepared_text), 2)])}")
+        
+        cipher_text = playfair_cipher(prepared_text, keyT, 'encrypt')
+        print(f"\nCipher Text    : {cipher_text}")
+        
+    elif choice == 'D':
+        text = input("Masukkan cipher text: ").strip()
+        
+        normalized_key = normalizeInput(key)
+        normalized_text = normalizeInput(text) # Ciphertext juga dinormalisasi
         
         keyT = []
-        normalizedKey = normalizeInput(key)
-        generateKeyTable(normalizedKey, keyT)
+        generateKeyTable(normalized_key, keyT)
         printKeyTable(keyT)
         
-        string = decryptByPlayfairCipher(string, key)
-        print("Plain text:", string)
+        print("\n--- Proses Dekripsi ---")
+        print(f"Key Asli         : {key}")
+        print(f"Cipher Text Asli : {text}")
+        print(f"Cipher Teks Normal: {normalized_text}")
+        
+        plain_text = playfair_cipher(normalized_text, keyT, 'decrypt')
+        print(f"\nHasil Plain Text : {plain_text}")
 
 
 if __name__ == "__main__":
